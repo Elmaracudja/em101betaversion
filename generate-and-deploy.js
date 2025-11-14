@@ -6,7 +6,7 @@ const path = require('path');
 const GITHUB_REPO = 'https://github.com/Elmaracudja/em101betaversion.git';
 const BRANCH = 'main';
 // URL corrigée du flux audio live
-const AUDIO_STREAM_URL = 'http://31.207.35.133:8000/stream';
+const AUDIO_STREAM_URL = 'http://31.207.35.133:8000/media/A01.mp3';
 
 // === Fonctions utilitaires ===
 function writeFile(filepath, content) {
