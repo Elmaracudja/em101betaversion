@@ -3,11 +3,11 @@ const { execSync } = require('child_process');
 const path = require('path');
 
 // === CONFIGURATION ===
-// CHANGE ici l'URL de ton dépôt GitHub
+// Remplace par ton dépôt GitHub exact
 const GITHUB_REPO = 'https://github.com/Elmaracudja/em101betaversion.git';
-// Nom de la branche git
+// Branche git
 const BRANCH = 'main';
-// URL audio live de ta webradio
+// URL de ton flux audio live
 const AUDIO_STREAM_URL = 'http://31.207.35.133:8000/A01.mp3';
 
 // === Fonctions utilitaires ===
@@ -15,6 +15,24 @@ function writeFile(filepath, content) {
   fs.mkdirSync(path.dirname(filepath), { recursive: true });
   fs.writeFileSync(filepath, content, 'utf8');
   console.log(`Créé: ${filepath}`);
+}
+
+function gitCommand(cmd) {
+  try {
+    execSync(cmd, { stdio: 'inherit' });
+  } catch (error) {
+    console.error(`Erreur git: ${cmd}\n`, error.message);
+    process.exit(1);
+  }
+}
+
+function remoteExists() {
+  try {
+    const remotes = execSync('git remote').toString();
+    return remotes.split('\n').includes('origin');
+  } catch {
+    return false;
+  }
 }
 
 // === Templates HTML ===
@@ -289,7 +307,6 @@ document.querySelectorAll('.slideshow').forEach(slideshow => {
 // === Fonction principale ===
 
 function generateSite() {
-  // Création dossiers
   ['css', 'js', 'images'].forEach(dir => {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir);
@@ -297,48 +314,56 @@ function generateSite() {
     }
   });
 
-  // Création fichiers HTML
   writeFile('index.html', templateIndex());
   writeFile('articles.html', templateArticles());
   writeFile('agenda.html', templateAgenda());
   writeFile('contact.html', templateContact());
 
-  // Création fichiers CSS/JS
   writeFile('css/style.css', cssContent);
   writeFile('js/player.js', playerJs);
   writeFile('js/slideshow.js', slideshowJs);
 
-  // (Pour tester, tu peux ajouter des images dans 'images' manuellement)
   console.log('Génération des fichiers terminée.');
 }
 
-function gitCommand(cmd) {
+function remoteExists() {
   try {
-    execSync(cmd, { stdio: 'inherit' });
-  } catch (error) {
-    console.error(`Erreur git: ${cmd}`, error.message);
+    const remotes = execSync('git remote').toString();
+    return remotes.split('\n').includes('origin');
+  } catch {
+    return false;
   }
 }
 
 function deployToGit() {
-  // Initialisation repo git si pas déjà fait
   if (!fs.existsSync('.git')) {
     gitCommand('git init');
     gitCommand(`git checkout -b ${BRANCH}`);
+  }
+
+  if (remoteExists()) {
+    gitCommand(`git remote set-url origin ${GITHUB_REPO}`);
+  } else {
     gitCommand(`git remote add origin ${GITHUB_REPO}`);
   }
-  // Ajout, commit, push
+
   gitCommand('git add .');
   const commitMessage = `Déploiement automatique em101betaversion ${new Date().toISOString()}`;
+
   try {
     gitCommand(`git commit -m "${commitMessage}"`);
   } catch {
     console.log('Aucun changement à committer');
   }
-  gitCommand(`git push -u origin ${BRANCH}`);
-  console.log('\nDéploiement terminé. Pense à activer ton GitHub Pages via "Settings > Pages".');
+
+  try {
+    gitCommand(`git push -u origin ${BRANCH}`);
+    console.log('\nDéploiement terminé. Active ton GitHub Pages dans "Settings > Pages".');
+  } catch (error) {
+    console.error('Erreur lors du push vers GitHub:\n', error.message);
+    console.error('Vérifie que le dépôt existe et que tu as les droits de push.');
+  }
 }
 
-// === Exécution ===
 generateSite();
 deployToGit();
