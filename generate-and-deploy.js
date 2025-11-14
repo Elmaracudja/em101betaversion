@@ -3,12 +3,10 @@ const { execSync } = require('child_process');
 const path = require('path');
 
 // === CONFIGURATION ===
-// Remplace par ton dépôt GitHub exact
 const GITHUB_REPO = 'https://github.com/Elmaracudja/em101betaversion.git';
-// Branche git
 const BRANCH = 'main';
-// URL de ton flux audio live
-const AUDIO_STREAM_URL = 'http://31.207.35.133:8000/A01.mp3';
+// URL corrigée du flux audio live
+const AUDIO_STREAM_URL = 'http://31.207.35.133:8000/stream';
 
 // === Fonctions utilitaires ===
 function writeFile(filepath, content) {
@@ -36,7 +34,6 @@ function remoteExists() {
 }
 
 // === Templates HTML ===
-
 function templateHeader(title) {
   return `
 <!DOCTYPE html>
@@ -45,6 +42,7 @@ function templateHeader(title) {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>em101betaversion - ${title}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -167,73 +165,105 @@ function templateContact() {
   );
 }
 
-// === CSS et JS ===
 
+// === CSS et JS ===
 const cssContent = `
-body, h1, h2, p, nav, a {
-  margin: 0; padding: 0; font-family: Arial, sans-serif;
+:root {
+  --couleur-primaire: #FFA500;
+  --couleur-secondaire: #90EE90;
+  --couleur-fond: #000000;
+  --couleur-texte: #FFFFFF;
+  --couleur-bouton-bg: var(--couleur-primaire);
+  --couleur-bouton-hover: var(--couleur-secondaire);
+  --couleur-nav-bg: var(--couleur-fond);
+  --couleur-nav-texte: var(--couleur-texte);
 }
+
 body {
+  font-family: 'Roboto Condensed', Arial, sans-serif;
+  background-color: var(--couleur-fond);
+  color: var(--couleur-texte);
   line-height: 1.6;
-  background: #f0f0f0;
-  color: #333;
+  margin: 0;
+  padding: 0;
 }
-.container {
-  max-width: 960px;
-  margin: auto;
-  padding: 1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+
 header {
-  background-color: #222;
-  color: #eee;
-  padding: 0.5rem 0;
-}
-header h1 {
-  font-size: 1.5rem;
-}
-nav a {
-  color: #eee;
-  text-decoration: none;
-  margin-left: 1rem;
-}
-nav a:hover {
-  text-decoration: underline;
-}
-#audio-player {
-  margin-top: 0.5rem;
-  text-align: center;
-}
-main {
-  background: white;
-  margin: 1rem auto;
-  max-width: 700px;
+  background-color: var(--couleur-nav-bg);
+  color: var(--couleur-nav-texte);
   padding: 1rem;
-  border-radius: 5px;
-  box-shadow: 0 0 5px rgba(0,0,0,0.1);
 }
+
+nav a {
+  color: var(--couleur-nav-texte);
+  text-decoration: none;
+  margin-right: 1rem;
+  font-weight: bold;
+  transition: color 0.3s ease;
+}
+
+nav a:hover {
+  color: var(--couleur-primaire);
+}
+
+main {
+  background-color: #111111;
+  margin: 1rem auto;
+  max-width: 900px;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 0 10px 2px rgba(255, 165, 0, 0.5);
+}
+
+h1, h2 {
+  font-family: 'Roboto Condensed', Arial, sans-serif;
+  color: var(--couleur-primaire);
+}
+
+a, button {
+  cursor: pointer;
+}
+
+button {
+  background-color: var(--couleur-bouton-bg);
+  color: var(--couleur-texte);
+  border: none;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: var(--couleur-bouton-hover);
+}
+
 footer {
   text-align: center;
-  font-size: 0.9rem;
   padding: 1rem;
-  color: #555;
+  background-color: var(--couleur-nav-bg);
+  color: var(--couleur-nav-texte);
+  margin-top: 2rem;
+  font-size: 0.9rem;
 }
+
 .articles-list article {
   margin-bottom: 2rem;
 }
+
 .slideshow {
   position: relative;
   max-width: 100%;
   height: auto;
   overflow: hidden;
 }
+
 .slideshow img {
   width: 100%;
   max-height: 350px;
   display: block;
 }
+
 .slideshow button {
   position: absolute;
   top: 50%;
@@ -245,13 +275,16 @@ footer {
   cursor: pointer;
   padding: 0 0.5rem;
 }
+
 .slideshow .prev-btn { left: 10px; }
 .slideshow .next-btn { right: 10px; }
+
 .contact-form label {
   display: block;
   margin-bottom: 0.3rem;
   font-weight: bold;
 }
+
 .contact-form input, .contact-form textarea {
   width: 100%;
   padding: 0.5rem;
@@ -259,16 +292,18 @@ footer {
   border: 1px solid #ccc;
   border-radius: 3px;
 }
+
 .contact-form button {
-  background-color: #222;
+  background-color: var(--couleur-bouton-bg);
   color: white;
   border: none;
   padding: 0.7rem 1.5rem;
   cursor: pointer;
   border-radius: 3px;
 }
+
 .contact-form button:hover {
-  background-color: #444;
+  background-color: var(--couleur-bouton-hover);
 }
 `;
 
@@ -305,7 +340,6 @@ document.querySelectorAll('.slideshow').forEach(slideshow => {
 `;
 
 // === Fonction principale ===
-
 function generateSite() {
   ['css', 'js', 'images'].forEach(dir => {
     if (!fs.existsSync(dir)) {
@@ -324,15 +358,6 @@ function generateSite() {
   writeFile('js/slideshow.js', slideshowJs);
 
   console.log('Génération des fichiers terminée.');
-}
-
-function remoteExists() {
-  try {
-    const remotes = execSync('git remote').toString();
-    return remotes.split('\n').includes('origin');
-  } catch {
-    return false;
-  }
 }
 
 function deployToGit() {
