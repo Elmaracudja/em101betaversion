@@ -25,10 +25,21 @@ header {
   padding: 1rem;
 }
 
+.header-logo-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logo {
+  height: 40px;
+  width: auto;
+}
+
 nav a {
   color: var(--couleur-nav-texte);
   text-decoration: none;
-  margin-right: 1rem;
+  margin-left: 1rem;
   font-weight: bold;
   transition: color 0.3s ease;
 }

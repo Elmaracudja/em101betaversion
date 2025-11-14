@@ -1,5 +1,5 @@
 
-const liveAudio = document.getElementById('live-audio');
+const liveAudio = document.getElementById('podcast-player');
 if(liveAudio) {
   liveAudio.volume = 0.5;
 }

@@ -5,21 +5,20 @@ const path = require('path');
 // === CONFIGURATION ===
 const GITHUB_REPO = 'https://github.com/Elmaracudja/em101betaversion.git';
 const BRANCH = 'main';
-// URL corrigée du flux audio live
-const AUDIO_STREAM_URL = 'http://31.207.35.133:8000/media/A01.mp3';
+const AUDIO_STREAM_URL = './Assets/audio/episode1.mp3';
 
-// === Fonctions utilitaires ===
+// === Helpers ===
 function writeFile(filepath, content) {
   fs.mkdirSync(path.dirname(filepath), { recursive: true });
   fs.writeFileSync(filepath, content, 'utf8');
-  console.log(`Créé: ${filepath}`);
+  console.log(`Fichier écrit : ${filepath}`);
 }
 
 function gitCommand(cmd) {
   try {
     execSync(cmd, { stdio: 'inherit' });
-  } catch (error) {
-    console.error(`Erreur git: ${cmd}\n`, error.message);
+  } catch (e) {
+    console.error(`Erreur git ${cmd} :`, e.message);
     process.exit(1);
   }
 }
@@ -33,7 +32,7 @@ function remoteExists() {
   }
 }
 
-// === Templates HTML ===
+// === Templates ===
 function templateHeader(title) {
   return `
 <!DOCTYPE html>
@@ -47,7 +46,8 @@ function templateHeader(title) {
 </head>
 <body>
   <header>
-    <div class="container">
+    <div class="container header-logo-title">
+      <img src="Assets/logo.png" alt="Logo em101" class="logo" />
       <h1>em101betaversion</h1>
       <nav>
         <a href="index.html">Accueil</a>
@@ -57,7 +57,7 @@ function templateHeader(title) {
       </nav>
     </div>
     <div id="audio-player">
-      <audio id="live-audio" preload="none" controls>
+      <audio id="podcast-player" controls>
         <source src="${AUDIO_STREAM_URL}" type="audio/mpeg" />
         Votre navigateur ne supporte pas la lecture audio.
       </audio>
@@ -84,7 +84,7 @@ function templateIndex() {
     `
     <section class="welcome">
       <h2>Bienvenue sur em101betaversion</h2>
-      <p>Écoutez la webradio en direct via le lecteur ci-dessus. Parcourez nos articles, consultez l’agenda et contactez-nous.</p>
+      <p>Écoutez les podcasts via le lecteur ci-dessus. Parcourez nos articles, consultez l’agenda et contactez-nous.</p>
     </section>
   ` +
     templateFooter()
@@ -100,9 +100,9 @@ function templateArticles() {
         <h2>Premier Article : Découverte musicale</h2>
         <p>Un aperçu des dernières tendances musicales.</p>
         <div class="slideshow">
-          <img src="images/article1-1.jpg" alt="Image 1 article" />
-          <img src="images/article1-2.jpg" alt="Image 2 article" style="display:none;" />
-          <img src="images/article1-3.jpg" alt="Image 3 article" style="display:none;" />
+          <img src="Assets/articles/article1-1.jpg" alt="Image 1 article" />
+          <img src="Assets/articles/article1-2.jpg" alt="Image 2 article" style="display:none;" />
+          <img src="Assets/articles/article1-3.jpg" alt="Image 3 article" style="display:none;" />
           <button class="prev-btn">‹</button>
           <button class="next-btn">›</button>
         </div>
@@ -111,8 +111,8 @@ function templateArticles() {
         <h2>Deuxième Article : Interview exclusive</h2>
         <p>Une interview approfondie avec un artiste renommé.</p>
         <div class="slideshow">
-          <img src="images/article2-1.jpg" alt="Image 1 article" />
-          <img src="images/article2-2.jpg" alt="Image 2 article" style="display:none;" />
+          <img src="Assets/articles/article2-1.jpg" alt="Image 1 article" />
+          <img src="Assets/articles/article2-2.jpg" alt="Image 2 article" style="display:none;" />
           <button class="prev-btn">‹</button>
           <button class="next-btn">›</button>
         </div>
@@ -165,8 +165,7 @@ function templateContact() {
   );
 }
 
-
-// === CSS et JS ===
+// === CSS & JS ===
 const cssContent = `
 :root {
   --couleur-primaire: #FFA500;
@@ -194,10 +193,21 @@ header {
   padding: 1rem;
 }
 
+.header-logo-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logo {
+  height: 40px;
+  width: auto;
+}
+
 nav a {
   color: var(--couleur-nav-texte);
   text-decoration: none;
-  margin-right: 1rem;
+  margin-left: 1rem;
   font-weight: bold;
   transition: color 0.3s ease;
 }
@@ -308,7 +318,7 @@ footer {
 `;
 
 const playerJs = `
-const liveAudio = document.getElementById('live-audio');
+const liveAudio = document.getElementById('podcast-player');
 if(liveAudio) {
   liveAudio.volume = 0.5;
 }
@@ -339,11 +349,21 @@ document.querySelectorAll('.slideshow').forEach(slideshow => {
 });
 `;
 
-// === Fonction principale ===
+// === Main ===
 function generateSite() {
-  ['css', 'js', 'images'].forEach(dir => {
+  const requiredDirs = [
+    'css',
+    'js',
+    'Assets/index',
+    'Assets/articles',
+    'Assets/agenda',
+    'Assets/contact',
+    'Assets/audio',
+  ];
+
+  requiredDirs.forEach((dir) => {
     if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir);
+      fs.mkdirSync(dir, { recursive: true });
       console.log(`Dossier créé : ${dir}`);
     }
   });
@@ -357,7 +377,7 @@ function generateSite() {
   writeFile('js/player.js', playerJs);
   writeFile('js/slideshow.js', slideshowJs);
 
-  console.log('Génération des fichiers terminée.');
+  console.log('Fichiers générés avec succès.');
 }
 
 function deployToGit() {
@@ -373,20 +393,19 @@ function deployToGit() {
   }
 
   gitCommand('git add .');
-  const commitMessage = `Déploiement automatique em101betaversion ${new Date().toISOString()}`;
+  const commitMsg = `Automatisation générée - ${new Date().toISOString()}`;
 
   try {
-    gitCommand(`git commit -m "${commitMessage}"`);
+    gitCommand(`git commit -m "${commitMsg}"`);
   } catch {
-    console.log('Aucun changement à committer');
+    console.log('Aucun changement à committer.');
   }
 
   try {
     gitCommand(`git push -u origin ${BRANCH}`);
-    console.log('\nDéploiement terminé. Active ton GitHub Pages dans "Settings > Pages".');
-  } catch (error) {
-    console.error('Erreur lors du push vers GitHub:\n', error.message);
-    console.error('Vérifie que le dépôt existe et que tu as les droits de push.');
+    console.log('Déploiement sur GitHub terminé avec succès.');
+  } catch (e) {
+    console.error('Erreur lors du push Git:', e.message);
   }
 }
 
