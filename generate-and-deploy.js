@@ -4,11 +4,11 @@ const path = require('path');
 
 // === CONFIGURATION ===
 // CHANGE ici l'URL de ton dépôt GitHub
-const GITHUB_REPO = 'https://github.com/ton-nom-utilisateur/em101betaversion.git';
+const GITHUB_REPO = 'https://github.com/Elmaracudja/em101betaversion.git';
 // Nom de la branche git
 const BRANCH = 'main';
 // URL audio live de ta webradio
-const AUDIO_STREAM_URL = 'http://streaming.example.com:8000/live.mp3';
+const AUDIO_STREAM_URL = 'http://31.207.35.133:8000/A01.mp3';
 
 // === Fonctions utilitaires ===
 function writeFile(filepath, content) {
